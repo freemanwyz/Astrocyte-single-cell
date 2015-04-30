@@ -31,7 +31,7 @@ datfp$psd95 <-  paste0(pdat,'/tif/EGFP+synapsin+PSD 952.lsm - Ch1-T2 - C3 Z',sta
 datfp$ap <- paste0(pdat,'/40AP_40X.tif')
 datfp$maxz_EGFP <- paste0(pdat,'/MAX_EGFP.tif')
 datfp$maxz_synapsin <- paste0(pdat,'/MAX_synapsin.tif')
-datfp$maxz_PSD952 <- paste0(pdat,'/MAX_PSD952.tif')
+datfp$maxz_PSD95 <- paste0(pdat,'/MAX_PSD952.tif')
 
 ## parameters ---------
 my_palette <- colorRampPalette(c('white',"yellow","green",'blue',"red"))(n = 299)
