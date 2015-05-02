@@ -6,35 +6,53 @@
 ## init ----------
 rm(list=ls())
 source('./init.R')
-neib_is_synapse <- T
+neib_is_synapse <- F
 erode <- F
-thr0 <- 0.1
-thr12 <- 0.12
+thr0 <- 0.05
+thr12 <- 0.04
 thr12_low <- 0.06
 
 ## neuron -----------------
 img <- readImage(datfp$ap,type = 'tiff',all = T)
 img <- channel(img,'green')
+display(img)
 f_max <- apply(img,c(1,2),max)
 f_bar <- apply(img,c(1,2),mean)
 rt0 <- f_max-f_bar
 img0 <- rt0
-display(img0)
-img0a <- (img0>thr0)*1
-display(img0a)
 
-## thinning -----------------
-im <- opening(closing(img0a))
-im <- closing(img0a)
-display(im)
-im <- thinImage(im)
+# pix <- which(img0>-1,arr.ind = T)/512/2
+# dat <- cbind(pix,as.vector(img0))
+# res <- kmeans(dat,centers = 10)
+# 
+# idx <- which(res$cluster==7)
+# xx1 <- pix[idx,]
+# imgx <- toRGB(as.Image(img0))
+# imgx[cbind(xx1[,1],xx1[,2],1)] <- 1
+# imgx[cbind(xx1[,1],xx1[,2],2)] <- 0
+# imgx[cbind(xx1[,1],xx1[,2],3)] <- 0
+# display(imgx)
+
+# display(img0)
+
+## masking and thinning -----------------
+img0a <- (img0>thr0)*1
+# display(img0a)
+# img0a1 <- (img0>0.2)*1
+# display(img0a1)
+
+# im <- opening(closing(img0a))
+# im <- closing(img0a)
+# im <- img0a
+# display(im)
+# im <- thinImage(im)
 # im <- thinningIteration(im, 0)
 # im <- thinningIteration(im, 1)
-display(im)
-
-# display(erode(img0a))
-# display(closing(img0a))
-display(erode(closing(img0a)))
+# display(im)
+# 
+# # display(erode(img0a))
+# # display(closing(img0a))
+# display(erode(closing(img0a)))
 if(erode) {
     img0a <- erode(closing(img0a))
 }
