@@ -29,6 +29,36 @@ my_region_grow <- function(dat,seed,thr=0.75) {
     return(lst)
 }
 
+my_region_grow_n <- function(dat,lst,n) {
+    for(ii in seq(n)) {
+        lst <- my_region_grow_one(dat,lst)
+    }
+    return(lst)
+}
+
+my_region_grow_one <- function(dat,lst) {
+    neib0 <- c(1,0,-1,0,0,1,0,-1,1,1,1,-1,-1,1,-1,-1)
+    neib0 <- matrix(neib0,nrow = 8,ncol = 2,byrow = T)
+    Nx <- dim(dat)[2]
+    mat_avail <- dat*0+1
+    mat_avail[lst] <- 0
+    for(ii in seq(dim(lst)[1])) {
+        ## neighbor within the boundary
+        neib <- t(t(neib0) + as.vector(lst[ii,]))
+        ii <- ii + 1
+        neib <- my_within_boundary(neib,Nx)
+        if(dim(neib)[1]==0) next
+        ## neighbor not searched yet
+        idx <- mat_avail[neib]>0
+        neib <- neib[idx,,drop=F]
+        if(dim(neib)[1]==0) next
+        mat_avail[neib] <- 0
+        ## new list of pixels
+        lst <- rbind(lst,neib)
+    }
+    return(lst)
+}
+
 ## load data ---------
 my_load_dat <- function() {
     ## neuron
@@ -94,6 +124,26 @@ my_label_region <- function(img,idx,idx2,idx3) {
     if(!missing(idx3)) {
         img[cbind(idx3[,1],idx3[,2],1)] <- 0
         img[cbind(idx3[,1],idx3[,2],2)] <- 0
+        img[cbind(idx3[,1],idx3[,2],3)] <- 1
+    }
+    return(img)
+}
+
+my_label_region1 <- function(img,idx,idx2,idx3) {
+    if(class(img)=='matrix') {
+        img <- toRGB(as.Image(img))
+    }
+    if(img@colormode==0) {
+        img <- toRGB((img))
+    }
+    if(dim(idx)[2]==dim(img)[2]) {
+        idx <- which(idx>0,arr.ind = T)
+    }
+    img[cbind(idx[,1],idx[,2],1)] <- 1
+    if(!missing(idx2)) {
+        img[cbind(idx2[,1],idx2[,2],2)] <- 1
+    }
+    if(!missing(idx3)) {
         img[cbind(idx3[,1],idx3[,2],3)] <- 1
     }
     return(img)
