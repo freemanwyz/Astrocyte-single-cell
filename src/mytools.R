@@ -79,7 +79,8 @@ my_load_dat <- function() {
     ## min of synapsin and psd95
     img12 <- pmin(img1@.Data,img2@.Data)
     img12s <- img12/max(img12)
-    return(list(egfp=img,egfp_max_mean=img0,egfp_max_mean_scl=img0s,
+    return(list(egfp=img,egfp_max=f_max,egfp_mean=f_bar,
+                egfp_max_mean=img0,egfp_max_mean_scl=img0s,
                 synapsin=img1,synapsin_scl=img1s,psd=img2,psd_scl=img2s,
                 synapse=img12,synapse_scl=img12s))
 }
@@ -123,6 +124,32 @@ my_label_region <- function(img,idx,idx2,idx3) {
     }
     if(!missing(idx3)) {
         img[cbind(idx3[,1],idx3[,2],1)] <- 0
+        img[cbind(idx3[,1],idx3[,2],2)] <- 0
+        img[cbind(idx3[,1],idx3[,2],3)] <- 1
+    }
+    return(img)
+}
+
+my_label_region2 <- function(img,idx,idx2,idx3) {
+    if(class(img)=='matrix') {
+        img <- toRGB(as.Image(img))
+    }
+    if(img@colormode==0) {
+        img <- toRGB((img))
+    }
+    if(dim(idx)[2]==dim(img)[2]) {
+        idx <- which(idx>0,arr.ind = T)
+    }
+    img[cbind(idx[,1],idx[,2],1)] <- 0
+    img[cbind(idx[,1],idx[,2],2)] <- 0
+    img[cbind(idx[,1],idx[,2],3)] <- 1
+    if(!missing(idx2)) {
+        img[cbind(idx2[,1],idx2[,2],1)] <- 1
+        img[cbind(idx2[,1],idx2[,2],2)] <- 0.5
+        img[cbind(idx2[,1],idx2[,2],3)] <- 0
+    }
+    if(!missing(idx3)) {
+        img[cbind(idx3[,1],idx3[,2],1)] <- 1
         img[cbind(idx3[,1],idx3[,2],2)] <- 0
         img[cbind(idx3[,1],idx3[,2],3)] <- 1
     }

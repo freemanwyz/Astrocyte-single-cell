@@ -7,15 +7,26 @@
 rm(list=ls())
 source('./init.R')
 thr_egfp_max_mean <- 0.03
+# hbound <- 0.5
 hbound <- 0.75
-lbound <- 0.25
+# hbound <- 0.8
+# lbound <- 0.5
+lbound <- 0.3
+# lbound <- 0.25
+nn_max_ratio <- 0.1
+val_thr <- 0.05
 
 ## load data
 x <- my_load_dat()
-img12 <- x$synapse * (x$egfp_max_mean>thr_egfp_max_mean)
+# xdat <- x$egfp_max
+xdat <- x$egfp_max_mean
+img12 <- x$synapse * (xdat>thr_egfp_max_mean) * (x$egfp_mean<0.9) * 1
+# img12 <- x$synapse * (x$egfp_max_mean>thr_egfp_max_mean)
 img12 <- img12/max(img12)
 # img12[img12>0.5] <- 0.5
 # my_heatmap(dat = img12,truncate_thr = 0.5)
+# my_heatmap(dat = x$egfp_max_mean,truncate_thr = 1)
+# my_heatmap(dat = x$egfp_mean,truncate_thr = 0.3)
 
 ## setup
 Nx <- dim(img12)[1]
@@ -29,14 +40,15 @@ for(ii in seq(rds+rds1)) {
 }
 
 ## find local maximum ------------
-xegfp <- x$egfp_max_mean
+xegfp <- xdat
 mat_val <- img12
-mat_avail <- (x$egfp_max_mean>thr_egfp_max_mean)*1
+mat_avail <- (mat_val>0)*1
+# mat_avail <- ((xdat>thr_egfp_max_mean) & (mat_val>0))*1
 res <- list()
 pic <- img12
 ii <- 1
 kk <- 0
-while(max(mat_val)>0.1) {
+while(max(mat_val)>val_thr) {
     kk <- kk + 1
     ## detect potential local maximum (ROI)
     seed <- which(mat_val==max(mat_val),arr.ind=T)[1,,drop=F]
@@ -83,7 +95,8 @@ while(max(mat_val)>0.1) {
     ## use the opposite center that is neither too large nor too small
     success <- 0
     nn <- 0
-    nn_max <- 3
+    # nn_max <- ceiling(length(new_centers_mean)*nn_max_ratio)
+    nn_max <- 1
     while(max(new_centers_mean)>0 & nn<nn_max) {
         nn <- nn + 1
         ## opposite center to the max center
@@ -109,37 +122,68 @@ while(max(mat_val)>0.1) {
         # idx3 <- mat_val[xx1]<hbound*mat_val[seed] & mat_val[xx1]>lbound*mat_val[seed]
         xx1 <- xx1[idx3,,drop=F]
         if(dim(xx1)[1]==0) next
+        lst0s <- (lst0[,2]-1)*Nx+lst0[,1]
+        xx1s <- (xx1[,2]-1)*Nx+xx1[,1]
+        idxs <- xx1s %in% lst0s
+        xx1 <- xx1[!idxs,,drop=F]
+        if(dim(xx1)[1]==0) next
         cr1 <- mean(mat_val[xx1]) < mean(mat_val[lst0])*hbound
         cr2 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*lbound  # !! redundant
-        cr3 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*(1+lbound)
+        # cr3 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*(1+lbound)
         if( cr1 & cr2 ) {  # target is smaller in synapse score
             res1 <- mean(xegfp[xx1])
             lst1 <- xx1
             success <- 1
             break
         }
-        if( cr3 ) {  # target is larger
-            res1 <- res0
-            res0 <- mean(xegfp[xx1])
-            lst1 <- lst0
-            lst0 <- xx1
-            success <- 1
-            break
-        }
+        #         if( cr3 ) {  # target is larger
+        #             res1 <- res0
+        #             res0 <- mean(xegfp[xx1])
+        #             lst1 <- lst0
+        #             lst0 <- xx1
+        #             success <- 1
+        #             break
+        #         }
     }
     
     ## update cache
-    lst0a <- my_region_grow_n(dat = img12, lst = lst0, n = 2)
+    lst0a <- my_region_grow_n(dat = img12, lst = lst0, n = 4)
     mat_val[lst0a] <- 0
     mat_avail[lst0a] <- 0
     if(success) {
-        pic <- my_label_region(pic,lst0,lst1)
+        #         if(log(res0)-log(res1)>log(1.66)) {
+        #             pic <- my_label_region(pic,lst0)
+        #             pic <- my_label_region(pic,lst1)
+        #         } 
+        #         if(log(res0)-log(res1)<log(0.6)){
+        #             pic <- my_label_region2(pic,lst0)
+        #             pic <- my_label_region2(pic,lst1)
+        #         }
+        
+        #         if(res0<res1-0.1) {
+        #             pic <- my_label_region2(pic,lst0)
+        #             pic <- my_label_region2(pic,lst1)
+        #         } 
+        #         if(res0>res1+0.1){
+        #             pic <- my_label_region(pic,lst0)
+        #             pic <- my_label_region(pic,lst1)
+        #         }
+        
+        if(res0<res1) {
+            pic <- my_label_region2(pic,lst0,lst1)
+            #             pic <- my_label_region2(pic,lst0)
+            #             pic <- my_label_region2(pic,lst1)
+        } else {
+            pic <- my_label_region(pic,lst0,lst1)
+            #             pic <- my_label_region(pic,lst0)
+            #             pic <- my_label_region(pic,lst1)
+        }
         # pic <- my_label_region(img12,lst0,lst1)
         # fname <- paste0(ptmp,'/rois/',ii,'.jpeg')
         # writeImage(pic, fname, quality=85)
         # display(pic)
         # display(my_label_region1(img12,lst0a,lst1a))
-        lst1a <- my_region_grow_n(dat = img12, lst = lst1, n = 2)
+        lst1a <- my_region_grow_n(dat = img12, lst = lst1, n = 4)
         mat_val[lst1a] <- 0
         mat_avail[lst1a] <- 0
         res[[ii]] <- c(res0,res1)
