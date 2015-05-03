@@ -8,11 +8,13 @@ rm(list=ls())
 source('./init.R')
 thr_egfp_max_mean <- 0.03
 # hbound <- 0.5
-hbound <- 0.75
+# hbound_region_grow <- 0.6
+hbound_region_grow <- 0.75
+hbound_pair_sel <- 0.9
 # hbound <- 0.8
 # lbound <- 0.5
-lbound <- 0.3
-# lbound <- 0.25
+# lbound <- 0.3
+lbound <- 0.6
 nn_max_ratio <- 0.1
 val_thr <- 0.05
 
@@ -28,6 +30,7 @@ img12 <- img12/max(img12)
 # my_heatmap(dat = x$egfp_max_mean,truncate_thr = 1)
 # my_heatmap(dat = x$egfp_mean,truncate_thr = 0.3)
 
+par(mar = c(2.5,2.5,2.5,2.5))
 ## setup
 Nx <- dim(img12)[1]
 rds <- 50
@@ -42,17 +45,18 @@ for(ii in seq(rds+rds1)) {
 ## find local maximum ------------
 xegfp <- xdat
 mat_val <- img12
+mat_val_center <- mat_val
 mat_avail <- (mat_val>0)*1
 # mat_avail <- ((xdat>thr_egfp_max_mean) & (mat_val>0))*1
 res <- list()
 pic <- img12
 ii <- 1
 kk <- 0
-while(max(mat_val)>val_thr) {
+while(max(mat_val_center)>val_thr) {
     kk <- kk + 1
     ## detect potential local maximum (ROI)
-    seed <- which(mat_val==max(mat_val),arr.ind=T)[1,,drop=F]
-    lst0 <- my_region_grow(mat_val,seed,thr=hbound)
+    seed <- which(mat_val_center==max(mat_val_center),arr.ind=T)[1,,drop=F]
+    lst0 <- my_region_grow(mat_val_center,seed,thr=hbound_region_grow)
     res0 <- mean(mat_val[lst0])
     
     ## roi property
@@ -71,6 +75,7 @@ while(max(mat_val)>val_thr) {
         lst0a <- my_region_grow_n(dat = img12, lst = lst0, n = 2)
         mat_val[lst0a] <- 0
         mat_avail[lst0a] <- 0
+        mat_val_center[lst0a] <- 0
         next
     }
     
@@ -83,7 +88,7 @@ while(max(mat_val)>val_thr) {
         xx1 <- my_within_boundary(xx1,Nx)
         xx1 <- xx1[mat_avail[xx1]>0,,drop=F]
         if(dim(xx1)[1]==0) next
-        new_centers_mean[jj] <- mean(xegfp[xx1])
+        new_centers_mean[jj] <- mean(mat_val[xx1])
     }
     if(0) {
         idxc <- complex(real=idx[,1],imag=idx[,2])
@@ -127,7 +132,7 @@ while(max(mat_val)>val_thr) {
         idxs <- xx1s %in% lst0s
         xx1 <- xx1[!idxs,,drop=F]
         if(dim(xx1)[1]==0) next
-        cr1 <- mean(mat_val[xx1]) < mean(mat_val[lst0])*hbound
+        cr1 <- mean(mat_val[xx1]) < mean(mat_val[lst0])*hbound_pair_sel
         cr2 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*lbound  # !! redundant
         # cr3 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*(1+lbound)
         if( cr1 & cr2 ) {  # target is smaller in synapse score
@@ -148,8 +153,7 @@ while(max(mat_val)>val_thr) {
     
     ## update cache
     lst0a <- my_region_grow_n(dat = img12, lst = lst0, n = 4)
-    mat_val[lst0a] <- 0
-    mat_avail[lst0a] <- 0
+    mat_val_center[lst0a] <- 0
     if(success) {
 #         if(log(res0)-log(res1)>log(1.66)) {
 #             pic <- my_label_region(pic,lst0)
@@ -184,8 +188,11 @@ while(max(mat_val)>val_thr) {
         # display(pic)
         # display(my_label_region1(img12,lst0a,lst1a))
         lst1a <- my_region_grow_n(dat = img12, lst = lst1, n = 4)
+        mat_val[lst0a] <- 0
         mat_val[lst1a] <- 0
+        mat_avail[lst0a] <- 0
         mat_avail[lst1a] <- 0
+        mat_val_center[lst1a] <- 0
         res[[ii]] <- c(res0,res1)
         ii <- ii+1
         if(ii%%10==0) {
@@ -201,7 +208,9 @@ display(pic)
 res <- do.call(rbind,res)
 res_dif <- res[,1] - res[,2]
 hist(res[,1]/res[,2])
-hist(res_dif)
+par(mar = c(5,5,0.5,0.5))
+hist(res_dif,main=NULL,xlab='x1-x2')
+par(mar = c(2.5,2.5,2.5,2.5))
 show(t.test(res[,1],res[,2],paired = T))
 
 
