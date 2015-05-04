@@ -1,5 +1,3 @@
-library(seriation)
-
 absDiff <- function(matrix1,matrix2) {
     r <- nrow(matrix1)
     c <- ncol(matrix1)
