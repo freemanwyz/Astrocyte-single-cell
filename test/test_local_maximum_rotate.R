@@ -62,11 +62,13 @@ while(max(mat_val_center)>val_thr) {
     ## roi property
     roi_center <- round(colMeans(lst0))
     dist <- sqrt(rowSums((t(t(lst0)-roi_center))^2))
-    roi_radius <- ceiling(max(dist)/1.5)
-    gap <- round(max(dist) + mean(dist))
+    roi_radius <- round(max(dist)/1.5+1)
+    # roi_radius <- ceiling(max(dist)/1.5)
+    # gap <- round(mean(dist) + mean(dist)+1)
+    gap <- round(max(dist) + mean(dist)+1)
     
     ## new centers
-    idx <- which(mat_ref==gap,arr.ind = T) - rds1
+    idx <- which(mat_ref>=gap & mat_ref<=gap+1 ,arr.ind = T) - rds1
     new_centers <- t(t(idx) + roi_center)
     new_centers <- my_within_boundary(new_centers,Nx)
     idx <- mat_avail[new_centers]>0
@@ -97,6 +99,10 @@ while(max(mat_val_center)>val_thr) {
         browser()
     }
     
+#     if( sum(colSums(abs(t(lst0)-c(133,328)))==0)>0) {
+#         browser()
+#     }
+    
     ## use the opposite center that is neither too large nor too small
     success <- 0
     nn <- 0
@@ -122,17 +128,18 @@ while(max(mat_val_center)>val_thr) {
         xx1 <- my_within_boundary(xx1,Nx)
         xx1 <- xx1[mat_avail[xx1]>0,,drop=F]
         if(dim(xx1)[1]==0) next
+        ## avoid overlap
+        lst0s <- (lst0[,2]-1)*Nx+lst0[,1]
+        xx1s <- (xx1[,2]-1)*Nx+xx1[,1]
+        idxs <- xx1s %in% lst0s
+        xx1 <- xx1[!idxs,,drop=F]
+        if(dim(xx1)[1]==0) next
         ## get mean, remove potential boundary points
         idx3 <- mat_val[xx1]>lbound*max(mat_val[xx1])
         # idx3 <- mat_val[xx1]>lbound*mean(mat_val[xx1])
         # idx3 <- mat_val[xx1]>lbound*mean(mat_val[lst0])
         # idx3 <- mat_val[xx1]<hbound*mat_val[seed] & mat_val[xx1]>lbound*mat_val[seed]
         xx1 <- xx1[idx3,,drop=F]
-        if(dim(xx1)[1]==0) next
-        lst0s <- (lst0[,2]-1)*Nx+lst0[,1]
-        xx1s <- (xx1[,2]-1)*Nx+xx1[,1]
-        idxs <- xx1s %in% lst0s
-        xx1 <- xx1[!idxs,,drop=F]
         if(dim(xx1)[1]==0) next
         cr1 <- mean(mat_val[xx1]) < mean(mat_val[lst0])*hbound_pair_sel
         # cr2 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*lbound  # !! redundant
@@ -212,7 +219,7 @@ res <- do.call(rbind,res)
 res_dif <- res[,1] - res[,2]
 hist(res[,1]/res[,2])
 par(mar = c(5,5,0.5,0.5))
-hist(res_dif,main=NULL,xlab='x1-x2')
+hist(res_dif,main=NULL,xlab='x1-x2',breaks=50)
 par(mar = c(2.5,2.5,2.5,2.5))
 show(t.test(res[,1],res[,2],paired = T))
 

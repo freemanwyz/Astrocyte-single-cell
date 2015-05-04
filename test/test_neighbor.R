@@ -7,10 +7,14 @@ rm(list=ls())
 source('./init.R')
 activity_data <- 3
 neib_is_synapse <- T
-thr0 <- 0.1
+thr0 <- 0.03
+# thr0 <- 0.1
+# thr12 <- 0.05
+thr12 <- 0.05
 # thr12 <- 0.07
-thr12 <- 0.12
-thr12_low <- 0.07
+# thr12 <- 0.12
+thr12_low <- 0.05
+# thr12_low <- 0.07
 stack_id <- 5
 
 ## neuron -----------------
