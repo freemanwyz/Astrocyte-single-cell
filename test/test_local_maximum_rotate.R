@@ -123,7 +123,9 @@ while(max(mat_val_center)>val_thr) {
         xx1 <- xx1[mat_avail[xx1]>0,,drop=F]
         if(dim(xx1)[1]==0) next
         ## get mean, remove potential boundary points
-        idx3 <- mat_val[xx1]>lbound*mean(mat_val[lst0])
+        idx3 <- mat_val[xx1]>lbound*max(mat_val[xx1])
+        # idx3 <- mat_val[xx1]>lbound*mean(mat_val[xx1])
+        # idx3 <- mat_val[xx1]>lbound*mean(mat_val[lst0])
         # idx3 <- mat_val[xx1]<hbound*mat_val[seed] & mat_val[xx1]>lbound*mat_val[seed]
         xx1 <- xx1[idx3,,drop=F]
         if(dim(xx1)[1]==0) next
@@ -133,9 +135,10 @@ while(max(mat_val_center)>val_thr) {
         xx1 <- xx1[!idxs,,drop=F]
         if(dim(xx1)[1]==0) next
         cr1 <- mean(mat_val[xx1]) < mean(mat_val[lst0])*hbound_pair_sel
-        cr2 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*lbound  # !! redundant
+        # cr2 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*lbound  # !! redundant
         # cr3 <- mean(mat_val[xx1]) > mean(mat_val[lst0])*(1+lbound)
-        if( cr1 & cr2 ) {  # target is smaller in synapse score
+        # if( cr1 & cr2 ) {  # target is smaller in synapse score
+        if( cr1 ) {  # target is smaller in synapse score
             res1 <- mean(xegfp[xx1])
             lst1 <- xx1
             success <- 1
