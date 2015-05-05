@@ -1,4 +1,58 @@
 ## region grow ----------
+## fill holes
+my_fill_hole <- function(mat_val,lst_all) {
+    direc <- matrix(c(-1,0,1,0,0,1,0,-1,1,1,1,-1,-1,1,-1,-1),nrow=4,ncol=2,byrow = T)
+    nn <- 0
+    for(ii in seq(dim(lst_all)[1])) {
+        cord <- lst_all[ii,,drop=F] 
+        if(mat_val[cord]<100) {
+            neib1 <- t(t(direc)+as.vector(cord))
+            neib1 <- my_within_boundary(neib1,512)
+            if(sum(mat_val[neib1]==100) >= dim(neib1)[1]/2) {
+                cat(ii,' ')
+                # lst <- rbind(lst,cord)
+                mat_val[cord] <- 100
+                nn <- nn + 1
+            }
+        }
+    }
+    return(list(mat=mat_val,nn=nn))
+}
+
+## from small to large
+my_region_grow1 <- function(dat,seed,thr=1.25) {
+    neib0 <- c(1,0,-1,0,0,1,0,-1,1,1,1,-1,-1,1,-1,-1)
+    neib0 <- matrix(neib0,nrow = 8,ncol = 2,byrow = T)
+    Nx <- dim(dat)[2]
+    lst <- matrix(seed,nrow=1,ncol=2)
+    lst1 <- lst
+    mat_avail <- dat*0+1
+    mat_avail[lst] <- 0
+    thry <- dat[lst]*thr
+    ii <- 1
+    while(ii<=dim(lst)[1]) {
+        ## neighbor within the boundary
+        neib <- t(t(neib0) + as.vector(lst[ii,]))
+        ii <- ii + 1
+        neib <- my_within_boundary(neib,Nx)
+        lst1 <- rbind(lst1,neib)
+        if(dim(neib)[1]==0) next
+        ## neighbor not searched yet
+        idx <- mat_avail[neib]>0
+        neib <- neib[idx,,drop=F]
+        if(dim(neib)[1]==0) next
+        ## neighbor higher than threshold
+        mat_avail[neib] <- 0
+        idx <- dat[neib] <= thry
+        neib <- neib[idx,,drop=F]
+        if(dim(neib)[1]==0) next
+        ## new list of pixels
+        lst <- rbind(lst,neib)
+    }
+    return(list(lst=lst,lst_all=lst1))
+}
+
+## from large to small
 my_region_grow <- function(dat,seed,thr=0.75) {
     neib0 <- c(1,0,-1,0,0,1,0,-1,1,1,1,-1,-1,1,-1,-1)
     neib0 <- matrix(neib0,nrow = 8,ncol = 2,byrow = T)
