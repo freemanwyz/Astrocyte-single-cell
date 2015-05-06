@@ -99,9 +99,9 @@ while(max(mat_val_center)>val_thr) {
         browser()
     }
     
-#     if( sum(colSums(abs(t(lst0)-c(133,328)))==0)>0) {
-#         browser()
-#     }
+    if( sum(colSums(abs(t(lst0)-c(237,150)))==0)>0) {
+        browser()
+    }
     
     ## use the opposite center that is neither too large nor too small
     success <- 0
@@ -134,7 +134,7 @@ while(max(mat_val_center)>val_thr) {
         idxs <- xx1s %in% lst0s
         xx1 <- xx1[!idxs,,drop=F]
         if(dim(xx1)[1]==0) next
-        ## get mean, remove potential boundary points
+        ## remove small value pixels
         idx3 <- mat_val[xx1]>lbound*max(mat_val[xx1])
         # idx3 <- mat_val[xx1]>lbound*mean(mat_val[xx1])
         # idx3 <- mat_val[xx1]>lbound*mean(mat_val[lst0])
