@@ -10,9 +10,9 @@ neib_is_synapse <- T
 thr0 <- 0.03
 # thr0 <- 0.1
 # thr12 <- 0.05
-thr12 <- 0.05
+# thr12 <- 0.05
 # thr12 <- 0.07
-# thr12 <- 0.12
+thr12 <- 0.12
 thr12_low <- 0.05
 # thr12_low <- 0.07
 stack_id <- 5
@@ -49,6 +49,7 @@ nrg2 <- seq(-1,1)
 ofst <- cbind(rbind(nrg1,0)+c(0,2), rbind(nrg1,0)+c(0,-2), 
                    rbind(0,nrg2)+c(-2,0), rbind(0,nrg2)+c(2,0))
 idx_sel <- which(img12a*img0a>0,arr.ind = T)
+# browser()
 N_pix <- dim(idx_sel)[1]
 mypairs_val <- list()
 # mypairs_syn <- list()
@@ -57,6 +58,7 @@ mypairs_val <- list()
 mypairs_pix <- list()
 cat('N_pix:',N_pix,'\n')
 jj <- 1
+ii=1100
 for(ii in seq(N_pix)) {
     if(ii%%100==0) cat(ii,' ')
     # cat(ii,' ')
@@ -65,6 +67,7 @@ for(ii in seq(N_pix)) {
     ## remove out of image neighbors
     xx_neib <- xx_neib[xx_neib[,1]>0 & xx_neib[,2]>0,,drop=F]
     xx_neib <- xx_neib[xx_neib[,1]<=512 & xx_neib[,2]<=512,,drop=F]
+    # display(my_label_region(img12,xx_neib,idx_sel[ii,,drop=F]))
     if(length(xx_neib)==0) next
     ## remvoe pixels without activity
     xx_neib <- xx_neib[img0a[xx_neib]>0,,drop=F]

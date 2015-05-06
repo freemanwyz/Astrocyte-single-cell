@@ -3,10 +3,11 @@ p0 <- list.files(pattern="*.R$", path="./src/", full.names=TRUE, ignore.case = T
 sapply(p0, FUN=source)
 
 library(methods)
-library(tiff)
-library(png)
+# library(tiff)
+# library(png)
 library(parallel)
 library(gplots)
+library(ggplot2)
 # library(seriation)
 # library(fields)
 library(EBImage)
