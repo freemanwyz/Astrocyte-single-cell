@@ -1,0 +1,5 @@
+ctrl neuron-ctrl astro-Tuj1, Syn I.lsm
+ctrl neuron-DS1 astro-Tuj1, Syn I.lsm
+ctrl neuron-DS2-astroTuj1, Syn I.lsm
+ctrl neuron-HA-Tuj1, Syn I.lsm
+ctrl neuron only-Tuj1, Syn I.lsm

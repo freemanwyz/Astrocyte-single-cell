@@ -1,7 +1,8 @@
+## init for joey synapse -------
 source('init.R')
 
-pdat <- paste0(cfg$synapse_ucdavis,'/data_joey_synapse/')
-# ptmp <- cfg$synapse_registration_dump
+pdat <- paste0(cfg$ucdavis_joey_synapse,'/data/')
+ptmp <- paste0(cfg$ucdavis_joey_synapse,'/img/')
 
 ## data files --------------
 stack_idx <- 1:10
