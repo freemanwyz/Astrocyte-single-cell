@@ -3,7 +3,7 @@ source('./init_guilai_coculture.R')
 
 img3 <- readImage(dat_Tuj1[[1]],type = 'tiff',all = T)
 img3 <- channel(img3,'red')
-# my_heatmap(img3,truncate_thr = 1)
+my_heatmap(img3,truncate_thr = 1)
 img2 <- readImage(dat_Syn1[[1]],type = 'tiff',all = T)
 img2 <- channel(img2,'red')
 # my_heatmap(img2,truncate_thr = 1)
